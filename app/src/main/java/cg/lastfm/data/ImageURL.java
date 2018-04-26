@@ -8,4 +8,10 @@ class ImageURL {
 
     public String size;
 
+    @Override
+    public boolean equals(Object other) {
+        ImageURL otherImageURL = (ImageURL) other;
+        return url == otherImageURL.url && size == otherImageURL.size;
+    }
+
 }
