@@ -5,7 +5,9 @@ import android.arch.paging.DataSource;
 import android.arch.paging.DataSource.Factory;
 import android.support.annotation.NonNull;
 
-public class ArtistsDataSourceFactory implements Factory {
+import cg.lastfm.data.Artist;
+
+public class ArtistsDataSourceFactory implements Factory<Integer, Artist> {
 
    private final MutableLiveData<ArtistsDataSource> mutableLiveData;
     private final String query;
@@ -17,7 +19,7 @@ public class ArtistsDataSourceFactory implements Factory {
 
 
     @Override
-    public DataSource create() {
+    public DataSource<Integer, Artist> create() {
         ArtistsDataSource artistsDataSource = new ArtistsDataSource(query);
         mutableLiveData.postValue(artistsDataSource);
         return artistsDataSource;

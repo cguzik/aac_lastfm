@@ -1,76 +1,89 @@
 package cg.lastfm.datasource;
 
 import android.arch.lifecycle.MutableLiveData;
-import android.arch.paging.PositionalDataSource;
+import android.arch.paging.PageKeyedDataSource;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import cg.lastfm.api.LastFMApi;
 import cg.lastfm.api.LastFMService;
 import cg.lastfm.data.Artist;
 import cg.lastfm.data.ArtistSearchResults;
-import cg.lastfm.data.TopArtists;
+import cg.lastfm.data.TopArtistsSearchResults;
 import cg.lastfm.util.Consumer;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-class ArtistsDataSource extends PositionalDataSource<Artist> {
+public class ArtistsDataSource extends PageKeyedDataSource<Integer, Artist> {
 
-    public static final String TAG = ArtistsDataSource.class.getSimpleName();
+    private static final String TAG = ArtistsDataSource.class.getSimpleName();
 
     private final LastFMService lastFMService;
     private final MutableLiveData<NetworkState> networkState;
     private final String query;
 
 
-    public ArtistsDataSource(@NonNull String query) {
+    ArtistsDataSource(@NonNull String query) {
         lastFMService = LastFMApi.createLastFMService();
         networkState = new MutableLiveData<>();
         this.query = query;
     }
 
+    public MutableLiveData<NetworkState> getNetworkState() {
+        return networkState;
+    }
+
     @Override
-    public void loadInitial(@NonNull LoadInitialParams params, @NonNull LoadInitialCallback<Artist> callback) {
-        loadArtists(params.requestedStartPosition, params.requestedLoadSize,
-                artists -> callback.onResult(artists, params.requestedStartPosition)
+    public void loadInitial(@NonNull LoadInitialParams<Integer> params, @NonNull LoadInitialCallback<Integer, Artist> callback) {
+        loadArtists(1, params.requestedLoadSize,
+                artists -> callback.onResult(artists, null, 2)
         );
     }
 
     @Override
-    public void loadRange(@NonNull LoadRangeParams params, @NonNull LoadRangeCallback<Artist> callback) {
-        loadArtists(params.startPosition, params.loadSize,
-                callback::onResult
+    public void loadBefore(@NonNull LoadParams<Integer> params, @NonNull LoadCallback<Integer, Artist> callback) {
+        //Implementation not needed. There is no data before initial page loaded.
+    }
+
+    @Override
+    public void loadAfter(@NonNull LoadParams<Integer> params, @NonNull LoadCallback<Integer, Artist> callback) {
+        Integer page = params.key;
+        Integer nextPage = page + 1;
+        loadArtists(page, params.requestedLoadSize,
+                artists -> callback.onResult(artists, nextPage)
         );
     }
 
-
-    private void loadArtists(int startPosition, int pageSize, @NonNull Consumer<List<Artist>> consumer) {
-        Log.d(TAG, "Loading Page " + startPosition + " page size " + pageSize);
+    private void loadArtists(int page, int pageSize, @NonNull Consumer<List<Artist>> consumer) {
+        Log.d(TAG, "Loading Page " + page + " page size " + pageSize);
         networkState.postValue(NetworkState.LOADING);
 
         if (query.isEmpty()) {
-            searchTopArtists(startPosition, pageSize, consumer);
+            searchTopArtists(page, pageSize, consumer);
         } else {
-            searchArtistsByName(query, startPosition, pageSize, consumer);
+            searchArtistsByName(query, page, pageSize, consumer);
         }
 
     }
 
-    private void searchArtistsByName(String query, int startPosition, int pageSize, Consumer<List<Artist>> consumer) {
+    private void searchArtistsByName(String query, int page, int pageSize, Consumer<List<Artist>> consumer) {
         lastFMService.searchArtists(
                 query,
                 LastFMService.SEARCH_ARTISTS_METHOD,
-                startPosition,
+                page,
                 pageSize,
                 LastFMService.API_KEY,
                 LastFMService.JSON_FORMAT).enqueue(new Callback<ArtistSearchResults>() {
             @Override
             public void onResponse(@NonNull Call<ArtistSearchResults> call, @NonNull Response<ArtistSearchResults> response) {
                 if (response.isSuccessful() && response.code() == 200) {
-                    postLoadedData(response.body().artistMatches.artists, consumer);
+                    ArrayList<Artist> artists = new ArrayList<>();
+                    artists.addAll(response.body().artistMatches.artists);
+                    postLoadedData(artists, consumer);
                 } else {
                     postNetworkError(response.message());
                 }
@@ -83,24 +96,26 @@ class ArtistsDataSource extends PositionalDataSource<Artist> {
         });
     }
 
-    private void searchTopArtists(int startPosition, int pageSize, @NonNull Consumer<List<Artist>> consumer) {
+    private void searchTopArtists(int page, int pageSize, @NonNull Consumer<List<Artist>> consumer) {
         lastFMService.searchTopArtists(
                 LastFMService.TOP_ARTISTS_METHOD,
-                startPosition,
+                page,
                 pageSize,
                 LastFMService.API_KEY,
-                LastFMService.JSON_FORMAT).enqueue(new Callback<TopArtists>() {
+                LastFMService.JSON_FORMAT).enqueue(new Callback<TopArtistsSearchResults>() {
             @Override
-            public void onResponse(@NonNull Call<TopArtists> call, @NonNull Response<TopArtists> response) {
+            public void onResponse(@NonNull Call<TopArtistsSearchResults> call, @NonNull Response<TopArtistsSearchResults> response) {
                 if (response.isSuccessful() && response.code() == 200) {
-                    postLoadedData(response.body().artists, consumer);
+                    ArrayList<Artist> artists = new ArrayList<>();
+                    artists.addAll(response.body().artists.artist);
+                    postLoadedData(artists, consumer);
                 } else {
                     postNetworkError(response.message());
                 }
             }
 
             @Override
-            public void onFailure(@NonNull Call<TopArtists> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<TopArtistsSearchResults> call, @NonNull Throwable t) {
                 postNetworkError(t.getMessage());
             }
         });

@@ -6,6 +6,7 @@ import java.util.List;
 import cg.lastfm.data.Artist;
 import cg.lastfm.data.ArtistSearchResults;
 import cg.lastfm.data.TopArtists;
+import cg.lastfm.data.TopArtistsSearchResults;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
@@ -18,7 +19,7 @@ public interface LastFMService {
     String API_KEY = "f761ead25660962a1d09b9478a4b7cf6";
     String JSON_FORMAT = "json";
 
-    @GET
+    @GET("/2.0")
     Call<ArtistSearchResults> searchArtists(
             @Query("method") String method,
             @Query("artist") String artist,
@@ -28,8 +29,8 @@ public interface LastFMService {
             @Query("format") String format
     );
 
-    @GET
-    Call<TopArtists> searchTopArtists(
+    @GET("/2.0")
+    Call<TopArtistsSearchResults> searchTopArtists(
             @Query("method") String method,
             @Query("page") int page,
             @Query("limit") int limit,

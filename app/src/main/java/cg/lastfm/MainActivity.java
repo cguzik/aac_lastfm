@@ -1,19 +1,27 @@
 package cg.lastfm;
 
 import android.app.SearchManager;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+import cg.lastfm.ui.ArtistAdapter;
+import cg.lastfm.ui.ArtistsViewModel;
+import cg.lastfm.ui.ListItemClickListener;
+
+public class MainActivity extends AppCompatActivity implements ListItemClickListener {
 
     private AppBarLayout mAppBarLayout;
 
@@ -21,10 +29,35 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        initArtistsList();
+
+        initAppBar();
+    }
+
+    private void initArtistsList() {
+        RecyclerView recyclerView = findViewById(R.id.artistsList);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        recyclerView.setLayoutManager(linearLayoutManager);
+
+        ArtistsViewModel viewModel = ViewModelProviders.of(this).get(ArtistsViewModel.class);
+
+        final ArtistAdapter artistAdapter = new ArtistAdapter(this);
+
+        viewModel.getArtistsList().observe(this, artistAdapter::setList);
+
+        viewModel.getNetworkState().observe(this, artistAdapter::setNetworkState);
+
+        recyclerView.setAdapter(artistAdapter);
+    }
+
+    private void initAppBar() {
+        mAppBarLayout = findViewById(R.id.app_bar);
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        mAppBarLayout = findViewById(R.id.app_bar);
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> mAppBarLayout.setExpanded(false));
     }
@@ -89,5 +122,10 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onClick(View view, int position) {
+        Toast.makeText(this, "Item at position " + position + " clicked.", Toast.LENGTH_LONG);
     }
 }

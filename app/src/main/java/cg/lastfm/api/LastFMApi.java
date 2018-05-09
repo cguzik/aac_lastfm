@@ -8,7 +8,7 @@ public class LastFMApi {
     public static LastFMService createLastFMService() {
         Retrofit.Builder builder = new Retrofit.Builder()
                 .addConverterFactory(GsonConverterFactory.create())
-                .baseUrl("http://ws.audioscrobbler.com/2.0");
+                .baseUrl("http://ws.audioscrobbler.com");
 
         return builder.build().create(LastFMService.class);
     }
