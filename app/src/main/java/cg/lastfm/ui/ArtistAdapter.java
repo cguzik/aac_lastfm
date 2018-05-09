@@ -1,18 +1,25 @@
 package cg.lastfm.ui;
 
 import android.arch.paging.PagedListAdapter;
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
 
 import cg.lastfm.R;
 import cg.lastfm.data.Artist;
 import cg.lastfm.datasource.NetworkState;
 import cg.lastfm.datasource.Status;
+import jp.wasabeef.glide.transformations.CropCircleTransformation;
+
+import static cg.lastfm.data.ImageURL.Size.MEDIUM;
 
 public class ArtistAdapter extends PagedListAdapter<Artist, RecyclerView.ViewHolder> {
 
@@ -94,16 +101,25 @@ public class ArtistAdapter extends PagedListAdapter<Artist, RecyclerView.ViewHol
 
     static class ArtistItemViewHolder extends RecyclerView.ViewHolder {
         TextView name, listenersNumber;
+        ImageView icon;
 
         public ArtistItemViewHolder(View itemView) {
             super(itemView);
             name = itemView.findViewById(R.id.name);
             listenersNumber = itemView.findViewById(R.id.listeners);
+            icon = itemView.findViewById((R.id.icon));
         }
 
         public void bindTo(Artist artist) {
             name.setText(artist.name);
             listenersNumber.setText(String.valueOf(artist.listeners));
+            Context context = icon.getContext();
+            Glide.with(context)
+                    .load(artist.getImageURL(MEDIUM).url)
+                    .placeholder(R.drawable.lastfm_round)
+                    .error(R.drawable.lastfm_round)
+                    .bitmapTransform(new CropCircleTransformation(context))
+                    .into(icon);
         }
     }
 

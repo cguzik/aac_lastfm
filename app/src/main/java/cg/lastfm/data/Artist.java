@@ -29,7 +29,17 @@ public class Artist {
 
     public String url;
 
+    @SerializedName("image")
     public List<ImageURL> imageURLS;
+
+    public ImageURL getImageURL(ImageURL.Size size) {
+        for (ImageURL imageURL : imageURLS) {
+            if (size.equals(imageURL.size)) {
+                return imageURL;
+            }
+        }
+        throw new RuntimeException("Size " + size.name() + " not available for artist " + name);
+    }
 
     @Override
     public boolean equals(Object obj) {
@@ -40,10 +50,10 @@ public class Artist {
 
         boolean same =
                 artist.id == this.id
-                && artist.name == this.name
-                && artist.listeners == this.listeners
-                && artist.url == this.url
-                && artist.imageURLS.size() == this.imageURLS.size();
+                        && artist.name == this.name
+                        && artist.listeners == this.listeners
+                        && artist.url == this.url
+                        && artist.imageURLS.size() == this.imageURLS.size();
 
         if (same) {
             Iterator<ImageURL> thisImageIterator = this.imageURLS.iterator();
