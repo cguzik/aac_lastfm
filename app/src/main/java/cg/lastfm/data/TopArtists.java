@@ -1,7 +1,10 @@
 package cg.lastfm.data;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.List;
 
 public class TopArtists {
-    public List<Artist> artist;
+    @SerializedName("artist")
+    public List<Artist> artists;
 }

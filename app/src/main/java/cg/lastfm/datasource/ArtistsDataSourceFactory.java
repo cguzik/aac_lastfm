@@ -7,7 +7,7 @@ import android.support.annotation.NonNull;
 
 import cg.lastfm.data.Artist;
 
-public class ArtistsDataSourceFactory implements Factory<Integer, Artist> {
+public class ArtistsDataSourceFactory extends Factory<Integer, Artist> {
 
    private final MutableLiveData<ArtistsDataSource> mutableLiveData;
     private final String query;

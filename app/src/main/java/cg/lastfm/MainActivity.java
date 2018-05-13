@@ -11,7 +11,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,32 +23,46 @@ import cg.lastfm.ui.ListItemClickListener;
 public class MainActivity extends AppCompatActivity implements ListItemClickListener {
 
     private AppBarLayout mAppBarLayout;
+    private ArtistsViewModel viewModel;
+    private RecyclerView recyclerView;
+    private ArtistAdapter artistAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        initArtistsList();
+        initRecyclerView();
+
+        initViewModel();
+
+        initAdapter();
 
         initAppBar();
     }
 
-    private void initArtistsList() {
-        RecyclerView recyclerView = findViewById(R.id.artistsList);
+    private void updateSearchQuery(String query) {
+        if (viewModel.notifyQueryHasChanged(query, this)) {
+            initAdapter();
+        }
+    }
+
+    private void initViewModel() {
+        viewModel = ViewModelProviders.of(this).get(ArtistsViewModel.class);
+    }
+
+    private void initAdapter() {
+        artistAdapter = new ArtistAdapter(this);
+        recyclerView.swapAdapter(artistAdapter, true);
+        viewModel.getArtistsList().observe(this, artistAdapter::submitList);
+        viewModel.getNetworkState().observe(this, artistAdapter::setNetworkState);
+    }
+
+    private void initRecyclerView() {
+        recyclerView = findViewById(R.id.artistsList);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(linearLayoutManager);
-
-        ArtistsViewModel viewModel = ViewModelProviders.of(this).get(ArtistsViewModel.class);
-
-        final ArtistAdapter artistAdapter = new ArtistAdapter(this);
-
-        viewModel.getArtistsList().observe(this, artistAdapter::setList);
-
-        viewModel.getNetworkState().observe(this, artistAdapter::setNetworkState);
-
-        recyclerView.setAdapter(artistAdapter);
     }
 
     private void initAppBar() {
@@ -84,10 +97,7 @@ public class MainActivity extends AppCompatActivity implements ListItemClickList
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                toast.cancel();
-                toast = Toast.makeText(searchView.getContext(), "Search query changed: " + newText, Toast.LENGTH_LONG);
-                toast.setGravity(Gravity.TOP, 0, getResources().getDimensionPixelOffset(R.dimen.app_bar_height));
-                toast.show();
+                updateSearchQuery(newText);
                 return false;
             }
         });
@@ -126,6 +136,14 @@ public class MainActivity extends AppCompatActivity implements ListItemClickList
 
     @Override
     public void onClick(View view, int position) {
-        Toast.makeText(this, "Item at position " + position + " clicked.", Toast.LENGTH_LONG);
+        switch (artistAdapter.getItemViewType(position)) {
+            case R.layout.network_state_item:
+                viewModel.restartLoadingData(this);
+                initAdapter();
+                break;
+            case R.layout.artist_list_item:
+                //TODO load artist details activity
+                break;
+        }
     }
 }

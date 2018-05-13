@@ -72,8 +72,8 @@ public class ArtistsDataSource extends PageKeyedDataSource<Integer, Artist> {
 
     private void searchArtistsByName(String query, int page, int pageSize, Consumer<List<Artist>> consumer) {
         lastFMService.searchArtists(
-                query,
                 LastFMService.SEARCH_ARTISTS_METHOD,
+                query,
                 page,
                 pageSize,
                 LastFMService.API_KEY,
@@ -82,7 +82,7 @@ public class ArtistsDataSource extends PageKeyedDataSource<Integer, Artist> {
             public void onResponse(@NonNull Call<ArtistSearchResults> call, @NonNull Response<ArtistSearchResults> response) {
                 if (response.isSuccessful() && response.code() == 200) {
                     ArrayList<Artist> artists = new ArrayList<>();
-                    artists.addAll(response.body().artistMatches.artists);
+                    artists.addAll(response.body().results.artistMatches.artists);
                     postLoadedData(artists, consumer);
                 } else {
                     postNetworkError(response.message());
@@ -107,7 +107,7 @@ public class ArtistsDataSource extends PageKeyedDataSource<Integer, Artist> {
             public void onResponse(@NonNull Call<TopArtistsSearchResults> call, @NonNull Response<TopArtistsSearchResults> response) {
                 if (response.isSuccessful() && response.code() == 200) {
                     ArrayList<Artist> artists = new ArrayList<>();
-                    artists.addAll(response.body().artists.artist);
+                    artists.addAll(response.body().artists.artists);
                     postLoadedData(artists, consumer);
                 } else {
                     postNetworkError(response.message());

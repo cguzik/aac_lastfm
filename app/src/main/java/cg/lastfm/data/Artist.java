@@ -1,7 +1,7 @@
 package cg.lastfm.data;
 
 import android.support.annotation.NonNull;
-import android.support.v7.recyclerview.extensions.DiffCallback;
+import android.support.v7.util.DiffUtil;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -9,7 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class Artist {
-    public static DiffCallback<Artist> DIFF_CALLBACK = new DiffCallback<Artist>() {
+    public static DiffUtil.ItemCallback<Artist> DIFF_CALLBACK = new DiffUtil.ItemCallback<Artist>() {
         @Override
         public boolean areItemsTheSame(@NonNull Artist oldItem, @NonNull Artist newItem) {
             return oldItem.id == newItem.id;

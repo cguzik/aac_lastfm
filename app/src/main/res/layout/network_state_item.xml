@@ -18,7 +18,7 @@
     <Button
         android:visibility="gone"
         android:id="@+id/retry_button"
-        style="@style/Widget.AppCompat.Button.Colored"
+        style="@style/AppButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"

@@ -1,16 +1,11 @@
 package cg.lastfm.api;
 
 
-import java.util.List;
-
-import cg.lastfm.data.Artist;
 import cg.lastfm.data.ArtistSearchResults;
-import cg.lastfm.data.TopArtists;
 import cg.lastfm.data.TopArtistsSearchResults;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
-import retrofit2.http.QueryName;
 
 public interface LastFMService {
     String TOP_ARTISTS_METHOD = "chart.getTopArtists";

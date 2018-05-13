@@ -2,6 +2,7 @@ package cg.lastfm.ui;
 
 import android.arch.paging.PagedListAdapter;
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,8 +33,9 @@ public class ArtistAdapter extends PagedListAdapter<Artist, RecyclerView.ViewHol
         this.itemClickListener = itemClickListener;
     }
 
+    @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         View view;
         RecyclerView.ViewHolder viewHolder;
@@ -55,7 +57,7 @@ public class ArtistAdapter extends PagedListAdapter<Artist, RecyclerView.ViewHol
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         switch (getItemViewType(position)) {
             case R.layout.artist_list_item:
                 ((ArtistItemViewHolder) holder).bindTo(getItem(position));
@@ -67,11 +69,7 @@ public class ArtistAdapter extends PagedListAdapter<Artist, RecyclerView.ViewHol
     }
 
     private boolean hasExtraRow() {
-        if (networkState != null && networkState != NetworkState.LOADED) {
-            return true;
-        } else {
-            return false;
-        }
+        return networkState != null && networkState != NetworkState.LOADED;
     }
 
     @Override
@@ -83,19 +81,26 @@ public class ArtistAdapter extends PagedListAdapter<Artist, RecyclerView.ViewHol
         }
     }
 
+    @Override
+    public int getItemCount() {
+        int extraRowsNumber = hasExtraRow() ? 1 : 0;
+        return super.getItemCount() + extraRowsNumber;
+    }
+
     public void setNetworkState(NetworkState newNetworkState) {
+        int itemCount = getItemCount();
         NetworkState previousState = this.networkState;
         boolean previousExtraRow = hasExtraRow();
         this.networkState = newNetworkState;
         boolean newExtraRow = hasExtraRow();
         if (previousExtraRow != newExtraRow) {
             if (previousExtraRow) {
-                notifyItemRemoved(getItemCount());
+                notifyItemRemoved(itemCount);
             } else {
-                notifyItemInserted(getItemCount());
+                notifyItemInserted(itemCount + 1);
             }
         } else if (newExtraRow && previousState != newNetworkState) {
-            notifyItemChanged(getItemCount() - 1);
+            notifyItemChanged(itemCount -1);
         }
     }
 
@@ -103,14 +108,14 @@ public class ArtistAdapter extends PagedListAdapter<Artist, RecyclerView.ViewHol
         TextView name, listenersNumber;
         ImageView icon;
 
-        public ArtistItemViewHolder(View itemView) {
+        ArtistItemViewHolder(View itemView) {
             super(itemView);
             name = itemView.findViewById(R.id.name);
             listenersNumber = itemView.findViewById(R.id.listeners);
             icon = itemView.findViewById((R.id.icon));
         }
 
-        public void bindTo(Artist artist) {
+        void bindTo(Artist artist) {
             name.setText(artist.name);
             listenersNumber.setText(String.valueOf(artist.listeners));
             Context context = icon.getContext();
@@ -129,7 +134,7 @@ public class ArtistAdapter extends PagedListAdapter<Artist, RecyclerView.ViewHol
         private final TextView errorMsg;
         private Button button;
 
-        public NetworkStateItemViewHolder(View itemView, ListItemClickListener listItemClickListener) {
+        NetworkStateItemViewHolder(View itemView, ListItemClickListener listItemClickListener) {
             super(itemView);
             progressBar = itemView.findViewById(R.id.progress_bar);
             errorMsg = itemView.findViewById(R.id.error_msg);
@@ -144,8 +149,8 @@ public class ArtistAdapter extends PagedListAdapter<Artist, RecyclerView.ViewHol
         }
 
 
-        public void bindView(NetworkState networkState) {
-            if (networkState != null && networkState.getStatus() == Status.RUNNING) {
+        void bindView(NetworkState networkState) {
+            if (networkState == null || networkState.getStatus() == Status.RUNNING) {
                 progressBar.setVisibility(View.VISIBLE);
             } else {
                 progressBar.setVisibility(View.GONE);
@@ -154,8 +159,10 @@ public class ArtistAdapter extends PagedListAdapter<Artist, RecyclerView.ViewHol
             if (networkState != null && networkState.getStatus() == Status.FAILED) {
                 errorMsg.setVisibility(View.VISIBLE);
                 errorMsg.setText(networkState.getMsg());
+                button.setVisibility(View.VISIBLE);
             } else {
                 errorMsg.setVisibility(View.GONE);
+                button.setVisibility(View.GONE);
             }
         }
     }
