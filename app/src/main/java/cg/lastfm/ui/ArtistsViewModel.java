@@ -28,14 +28,13 @@ public class ArtistsViewModel extends ViewModel {
     }
 
     /**
-     *
-     * @param query new artists search query
+     * @param query          new artists search query
      * @param lifecycleOwner associated with observers registered for this model
      * @return true if datasource has changed
      */
     public boolean notifyQueryHasChanged(String query, LifecycleOwner lifecycleOwner) {
         boolean queryHasChanged = !query.equals(this.query);
-        if(queryHasChanged) {
+        if (queryHasChanged) {
             this.query = query;
             restartLoadingData(lifecycleOwner);
         }

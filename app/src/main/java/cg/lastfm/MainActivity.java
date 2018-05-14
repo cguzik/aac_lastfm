@@ -6,6 +6,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -26,11 +27,14 @@ public class MainActivity extends AppCompatActivity implements ListItemClickList
     private ArtistsViewModel viewModel;
     private RecyclerView recyclerView;
     private ArtistAdapter artistAdapter;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        initSwipeRefreshLayout();
 
         initRecyclerView();
 
@@ -39,6 +43,19 @@ public class MainActivity extends AppCompatActivity implements ListItemClickList
         initAdapter();
 
         initAppBar();
+    }
+
+    private void initSwipeRefreshLayout() {
+        swipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary,
+                R.color.colorAccent);
+
+        swipeRefreshLayout.setOnRefreshListener(
+                () -> {
+                    restartLoadingData();
+                    swipeRefreshLayout.setRefreshing(false);
+                }
+        );
     }
 
     private void updateSearchQuery(String query) {
@@ -122,14 +139,13 @@ public class MainActivity extends AppCompatActivity implements ListItemClickList
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                Toast.makeText(this, "Settings menu item selected", Toast.LENGTH_LONG);
+                return true;
+            case R.id.menu_refresh:
+                restartLoadingData();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -138,12 +154,16 @@ public class MainActivity extends AppCompatActivity implements ListItemClickList
     public void onClick(View view, int position) {
         switch (artistAdapter.getItemViewType(position)) {
             case R.layout.network_state_item:
-                viewModel.restartLoadingData(this);
-                initAdapter();
+                restartLoadingData();
                 break;
             case R.layout.artist_list_item:
                 //TODO load artist details activity
                 break;
         }
+    }
+
+    private void restartLoadingData() {
+        viewModel.restartLoadingData(this);
+        initAdapter();
     }
 }

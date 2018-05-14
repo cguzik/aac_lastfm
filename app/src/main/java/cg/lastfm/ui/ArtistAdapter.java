@@ -100,7 +100,7 @@ public class ArtistAdapter extends PagedListAdapter<Artist, RecyclerView.ViewHol
                 notifyItemInserted(itemCount + 1);
             }
         } else if (newExtraRow && previousState != newNetworkState) {
-            notifyItemChanged(itemCount -1);
+            notifyItemChanged(itemCount - 1);
         }
     }
 

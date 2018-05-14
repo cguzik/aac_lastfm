@@ -9,7 +9,7 @@ import cg.lastfm.data.Artist;
 
 public class ArtistsDataSourceFactory extends Factory<Integer, Artist> {
 
-   private final MutableLiveData<ArtistsDataSource> mutableLiveData;
+    private final MutableLiveData<ArtistsDataSource> mutableLiveData;
     private final String query;
 
     public ArtistsDataSourceFactory(@NonNull String query) {
