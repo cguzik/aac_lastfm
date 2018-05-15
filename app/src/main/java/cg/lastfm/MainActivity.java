@@ -1,6 +1,7 @@
 package cg.lastfm;
 
 import android.app.SearchManager;
+import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.os.Bundle;
@@ -52,15 +53,16 @@ public class MainActivity extends AppCompatActivity implements ListItemClickList
 
         swipeRefreshLayout.setOnRefreshListener(
                 () -> {
-                    restartLoadingData();
+                    viewModel.refreshLoadedData();
                     swipeRefreshLayout.setRefreshing(false);
                 }
         );
     }
 
     private void updateSearchQuery(String query) {
-        if (viewModel.notifyQueryHasChanged(query, this)) {
-            initAdapter();
+        MutableLiveData<String> queryLiveData = viewModel.getQueryLiveData();
+        if (!query.equals(queryLiveData.getValue())) {
+            queryLiveData.setValue(query);
         }
     }
 
@@ -144,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements ListItemClickList
                 Toast.makeText(this, "Settings menu item selected", Toast.LENGTH_LONG);
                 return true;
             case R.id.menu_refresh:
-                restartLoadingData();
+                viewModel.refreshLoadedData();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -154,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements ListItemClickList
     public void onClick(View view, int position) {
         switch (artistAdapter.getItemViewType(position)) {
             case R.layout.network_state_item:
-                restartLoadingData();
+                viewModel.refreshLoadedData();
                 break;
             case R.layout.artist_list_item:
                 //TODO load artist details activity
@@ -162,8 +164,4 @@ public class MainActivity extends AppCompatActivity implements ListItemClickList
         }
     }
 
-    private void restartLoadingData() {
-        viewModel.restartLoadingData(this);
-        initAdapter();
-    }
 }

@@ -2,6 +2,7 @@ package cg.lastfm.ui;
 
 import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Transformations;
 import android.arch.lifecycle.ViewModel;
 import android.arch.paging.LivePagedListBuilder;
@@ -18,43 +19,44 @@ import cg.lastfm.datasource.NetworkState;
 public class ArtistsViewModel extends ViewModel {
     private static final int PAGE_SIZE = 11;
     private final ExecutorService executor;
+    private final LiveData<PagedList<Artist>> artistsList;
+    private final MutableLiveData<String> queryLiveData;
+    private final LiveData<ArtistsDataSourceFactory> artistsDataSourceFactoryLiveData;
+    private final LiveData<ArtistsDataSource> artistsDataSourceLiveData;
     private LiveData<NetworkState> networkState;
-    private LiveData<PagedList<Artist>> artistsList;
-    private String query = "";
 
     public ArtistsViewModel() {
         executor = Executors.newFixedThreadPool(5);
-        initDataSource(query);
+        queryLiveData = new MutableLiveData<>();
+        queryLiveData.setValue("");
+
+        artistsDataSourceFactoryLiveData = Transformations.switchMap(queryLiveData, query -> {
+                    MutableLiveData<ArtistsDataSourceFactory> artistsDataSourceFactoryLiveData = new MutableLiveData<>();
+                    artistsDataSourceFactoryLiveData.setValue(new ArtistsDataSourceFactory(query));
+                    return artistsDataSourceFactoryLiveData;
+                }
+        );
+
+        artistsDataSourceLiveData = Transformations.switchMap(artistsDataSourceFactoryLiveData, ArtistsDataSourceFactory::getArtistsDataSourceLiveData);
+
+        networkState = Transformations.switchMap(artistsDataSourceLiveData, ArtistsDataSource::getNetworkState);
+
+        artistsList = Transformations.switchMap(artistsDataSourceFactoryLiveData, dataSourceFactory -> {
+                    PagedList.Config pagedListConfig =
+                            (new PagedList.Config.Builder()).setEnablePlaceholders(false)
+                                    .setInitialLoadSizeHint(PAGE_SIZE)
+                                    .setPageSize(PAGE_SIZE)
+                                    .build();
+
+                    return new LivePagedListBuilder<>(dataSourceFactory, pagedListConfig)
+                            .setFetchExecutor(executor)
+                            .build();
+                }
+        );
     }
 
-    /**
-     * @param query          new artists search query
-     * @param lifecycleOwner associated with observers registered for this model
-     * @return true if datasource has changed
-     */
-    public boolean notifyQueryHasChanged(String query, LifecycleOwner lifecycleOwner) {
-        boolean queryHasChanged = !query.equals(this.query);
-        if (queryHasChanged) {
-            this.query = query;
-            restartLoadingData(lifecycleOwner);
-        }
-        return queryHasChanged;
-    }
-
-    private void initDataSource(String query) {
-        ArtistsDataSourceFactory dataSourceFactory = new ArtistsDataSourceFactory(query);
-
-        networkState = Transformations.switchMap(dataSourceFactory.getMutableLiveData(), ArtistsDataSource::getNetworkState);
-
-        PagedList.Config pagedListConfig =
-                (new PagedList.Config.Builder()).setEnablePlaceholders(false)
-                        .setInitialLoadSizeHint(PAGE_SIZE)
-                        .setPageSize(PAGE_SIZE)
-                        .build();
-
-        artistsList = new LivePagedListBuilder<>(dataSourceFactory, pagedListConfig)
-                .setFetchExecutor(executor)
-                .build();
+    public MutableLiveData<String> getQueryLiveData() {
+        return queryLiveData;
     }
 
     public LiveData<NetworkState> getNetworkState() {
@@ -65,9 +67,8 @@ public class ArtistsViewModel extends ViewModel {
         return artistsList;
     }
 
-    public void restartLoadingData(LifecycleOwner lifecycleOwner) {
-        networkState.removeObservers(lifecycleOwner);
-        artistsList.removeObservers(lifecycleOwner);
-        initDataSource(query);
+    public void refreshLoadedData() {
+        String currentQuery = queryLiveData.getValue();
+        queryLiveData.setValue(currentQuery);
     }
 }
