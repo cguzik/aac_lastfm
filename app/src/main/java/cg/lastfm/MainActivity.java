@@ -107,6 +107,13 @@ public class MainActivity extends AppCompatActivity implements ListItemClickList
         // Assumes current activity is the searchable activity
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
 
+        String searchQuery = viewModel.getQueryLiveData().getValue();
+        if (!"".equals(searchQuery)) {
+            searchMenuItem.expandActionView();
+            searchView.setQuery(searchQuery, false);
+            searchView.clearFocus();
+        }
+
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
