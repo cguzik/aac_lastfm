@@ -12,7 +12,7 @@ public class Artist {
     public static DiffUtil.ItemCallback<Artist> DIFF_CALLBACK = new DiffUtil.ItemCallback<Artist>() {
         @Override
         public boolean areItemsTheSame(@NonNull Artist oldItem, @NonNull Artist newItem) {
-            return oldItem.id == newItem.id;
+            return oldItem.id.equals("") ? oldItem.name == newItem.name : oldItem.id == newItem.id;
         }
 
         @Override
