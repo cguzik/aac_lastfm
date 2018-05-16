@@ -21,6 +21,7 @@ import android.widget.Toast;
 import cg.lastfm.ui.ArtistAdapter;
 import cg.lastfm.ui.ArtistsViewModel;
 import cg.lastfm.ui.ListItemClickListener;
+import cg.lastfm.util.Keyboard;
 
 public class MainActivity extends AppCompatActivity implements ListItemClickListener {
 
@@ -107,11 +108,11 @@ public class MainActivity extends AppCompatActivity implements ListItemClickList
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            Toast toast = new Toast(searchView.getContext());
-
             @Override
             public boolean onQueryTextSubmit(String query) {
-                return onQueryTextChange(query);
+                Keyboard keyboard = new Keyboard(MainActivity.this);
+                keyboard.hide();
+                return true;
             }
 
             @Override
