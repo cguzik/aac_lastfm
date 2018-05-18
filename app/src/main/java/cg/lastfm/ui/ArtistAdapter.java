@@ -43,7 +43,7 @@ public class ArtistAdapter extends PagedListAdapter<Artist, RecyclerView.ViewHol
         switch (viewType) {
             case R.layout.artist_list_item:
                 view = layoutInflater.inflate(R.layout.artist_list_item, parent, false);
-                viewHolder = new ArtistItemViewHolder(view);
+                viewHolder = new ArtistItemViewHolder(view, itemClickListener);
                 break;
             case R.layout.network_state_item:
                 view = layoutInflater.inflate(R.layout.network_state_item, parent, false);
@@ -108,8 +108,9 @@ public class ArtistAdapter extends PagedListAdapter<Artist, RecyclerView.ViewHol
         TextView name, listenersNumber;
         ImageView icon;
 
-        ArtistItemViewHolder(View itemView) {
+        ArtistItemViewHolder(View itemView, final ListItemClickListener itemClickListener) {
             super(itemView);
+            itemView.setOnClickListener(v -> itemClickListener.onClick(v, getAdapterPosition()));
             name = itemView.findViewById(R.id.name);
             listenersNumber = itemView.findViewById(R.id.listeners);
             icon = itemView.findViewById((R.id.icon));
@@ -140,12 +141,7 @@ public class ArtistAdapter extends PagedListAdapter<Artist, RecyclerView.ViewHol
             errorMsg = itemView.findViewById(R.id.error_msg);
             button = itemView.findViewById(R.id.retry_button);
 
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    listItemClickListener.onClick(view, getAdapterPosition());
-                }
-            });
+            button.setOnClickListener(view -> listItemClickListener.onClick(view, getAdapterPosition()));
         }
 
 

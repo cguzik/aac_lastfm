@@ -4,6 +4,7 @@ import android.app.SearchManager;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -34,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements ListItemClickList
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.main_activity);
 
         initSwipeRefreshLayout();
 
@@ -167,7 +168,12 @@ public class MainActivity extends AppCompatActivity implements ListItemClickList
                 viewModel.refreshLoadedData();
                 break;
             case R.layout.artist_list_item:
-                //TODO load artist details activity
+                String artistName = artistAdapter.getCurrentList().get(position).name;
+
+                Intent intent = new Intent(this, ArtistDetailsActivity.class);
+                intent.putExtra(ArtistDetailsActivity.ARTIST_NAME_INTENT_KEY, artistName);
+
+                startActivity(intent);
                 break;
         }
     }

@@ -1,8 +1,10 @@
 package cg.lastfm.data;
 
+import com.google.gson.annotations.SerializedName;
+
 public class ArtistDetails extends Artist {
-    public String summary;
-    public String content;
+    @SerializedName("bio")
+    public ArtistBiography biography;
     public ArtistStats stats;
     public ArtistMatches similar;
 }

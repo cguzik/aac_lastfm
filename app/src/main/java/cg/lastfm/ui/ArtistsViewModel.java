@@ -1,6 +1,5 @@
 package cg.lastfm.ui;
 
-import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Transformations;
@@ -17,7 +16,7 @@ import cg.lastfm.datasource.ArtistsDataSourceFactory;
 import cg.lastfm.datasource.NetworkState;
 
 public class ArtistsViewModel extends ViewModel {
-    private static final int PAGE_SIZE = 11;
+    private static final int PAGE_SIZE = 16;
     private final ExecutorService executor;
     private final LiveData<PagedList<Artist>> artistsList;
     private final MutableLiveData<String> queryLiveData;

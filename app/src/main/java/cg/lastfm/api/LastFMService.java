@@ -1,7 +1,7 @@
 package cg.lastfm.api;
 
 
-import cg.lastfm.data.ArtistDetails;
+import cg.lastfm.data.ArtistDetailsResult;
 import cg.lastfm.data.ArtistSearchResults;
 import cg.lastfm.data.TopArtistsSearchResults;
 import retrofit2.Call;
@@ -36,7 +36,7 @@ public interface LastFMService {
     );
 
     @GET("/2.0")
-    Call<ArtistDetails> getArtistDetails(
+    Call<ArtistDetailsResult> getArtistDetails(
             @Query("method") String method,
             @Query("artist") String artist,
             @Query("api_key") String api_key,

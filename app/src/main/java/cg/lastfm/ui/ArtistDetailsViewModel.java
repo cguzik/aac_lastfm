@@ -10,6 +10,7 @@ import android.util.Log;
 import cg.lastfm.api.LastFMApi;
 import cg.lastfm.api.LastFMService;
 import cg.lastfm.data.ArtistDetails;
+import cg.lastfm.data.ArtistDetailsResult;
 import cg.lastfm.datasource.NetworkState;
 import cg.lastfm.datasource.Status;
 import retrofit2.Call;
@@ -39,18 +40,19 @@ public class ArtistDetailsViewModel extends ViewModel {
 
         final MutableLiveData<ArtistDetails> newArtistDetailsLiveData = new MutableLiveData<>();
 
-        webService.getArtistDetails(ARTIST_DETAILS_METHOD, name, API_KEY, JSON_FORMAT).enqueue(new Callback<ArtistDetails>() {
+        webService.getArtistDetails(ARTIST_DETAILS_METHOD, name, API_KEY, JSON_FORMAT).enqueue(new Callback<ArtistDetailsResult>() {
             @Override
-            public void onResponse(@NonNull Call<ArtistDetails> call, @NonNull Response<ArtistDetails> response) {
+            public void onResponse(@NonNull Call<ArtistDetailsResult> call, @NonNull Response<ArtistDetailsResult> response) {
                 if (response.isSuccessful() && response.code() == 200) {
-                    newArtistDetailsLiveData.postValue(response.body());
+                    newArtistDetailsLiveData.postValue(response.body().artist);
+                    networkStateLiveData.postValue(NetworkState.LOADED);
                 } else {
                     postErrorMessage(response.message());
                 }
             }
 
             @Override
-            public void onFailure(@NonNull Call<ArtistDetails> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<ArtistDetailsResult> call, @NonNull Throwable t) {
                 postErrorMessage(t.getMessage());
             }
         });
