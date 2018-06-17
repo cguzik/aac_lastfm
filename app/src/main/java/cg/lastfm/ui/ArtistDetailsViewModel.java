@@ -7,7 +7,8 @@ import android.arch.lifecycle.ViewModel;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import cg.lastfm.api.LastFMApi;
+import javax.inject.Inject;
+
 import cg.lastfm.api.LastFMService;
 import cg.lastfm.data.ArtistDetails;
 import cg.lastfm.data.ArtistDetailsResult;
@@ -27,8 +28,11 @@ public class ArtistDetailsViewModel extends ViewModel {
     private final MutableLiveData<String> nameLiveData = new MutableLiveData<>();
     private final MutableLiveData<NetworkState> networkStateLiveData = new MutableLiveData<>();
     private final LiveData<ArtistDetails> artistLiveData;
+    private final LastFMService lastFMService;
 
-    public ArtistDetailsViewModel() {
+    @Inject
+    public ArtistDetailsViewModel(LastFMService lastFMService) {
+        this.lastFMService = lastFMService;
         networkStateLiveData.setValue(NetworkState.LOADING);
 
         artistLiveData = Transformations.switchMap(nameLiveData, this::loadArtistDetailsLiveData);
@@ -36,11 +40,9 @@ public class ArtistDetailsViewModel extends ViewModel {
 
     @NonNull
     private LiveData<ArtistDetails> loadArtistDetailsLiveData(String name) {
-        LastFMService webService = LastFMApi.createLastFMService();
-
         final MutableLiveData<ArtistDetails> newArtistDetailsLiveData = new MutableLiveData<>();
 
-        webService.getArtistDetails(ARTIST_DETAILS_METHOD, name, API_KEY, JSON_FORMAT).enqueue(new Callback<ArtistDetailsResult>() {
+        lastFMService.getArtistDetails(ARTIST_DETAILS_METHOD, name, API_KEY, JSON_FORMAT).enqueue(new Callback<ArtistDetailsResult>() {
             @Override
             public void onResponse(@NonNull Call<ArtistDetailsResult> call, @NonNull Response<ArtistDetailsResult> response) {
                 if (response.isSuccessful() && response.code() == 200) {

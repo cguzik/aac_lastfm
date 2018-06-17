@@ -1,5 +1,6 @@
 package cg.lastfm;
 
+import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -13,27 +14,31 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
+import javax.inject.Inject;
+
 import cg.lastfm.data.ArtistDetails;
 import cg.lastfm.datasource.NetworkState;
 import cg.lastfm.datasource.Status;
 import cg.lastfm.ui.ArtistDetailsViewModel;
+import dagger.android.AndroidInjection;
 
 import static cg.lastfm.data.ImageURL.Size.EXTRALARGE;
 
 public class ArtistDetailsActivity extends AppCompatActivity {
     public static final String ARTIST_NAME_INTENT_KEY = "ARTIST_NAME";
 
-    private ArtistDetailsViewModel viewModel;
     private TextView summaryTextView;
-    private Toolbar toolbar;
     private ImageView imageView;
     private ProgressBar progressBar;
 
+    @Inject
+    ViewModelProvider.Factory viewModelFactory;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        AndroidInjection.inject(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.artist_details_activity);
-
         initViews();
         initToolbar();
         initViewModel();
@@ -46,14 +51,14 @@ public class ArtistDetailsActivity extends AppCompatActivity {
     }
 
     private void initToolbar() {
-        toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle(getArtistNameFromIntent());
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     private void initViewModel() {
-        viewModel = ViewModelProviders.of(this).get(ArtistDetailsViewModel.class);
+        ArtistDetailsViewModel viewModel = ViewModelProviders.of(this, viewModelFactory).get(ArtistDetailsViewModel.class);
         viewModel.getNameLiveData().setValue(getArtistNameFromIntent());
         viewModel.getArtistLiveData().observe(this, this::updateViews);
         viewModel.getNetworkStateLiveData().observe(this, this::updateViews);

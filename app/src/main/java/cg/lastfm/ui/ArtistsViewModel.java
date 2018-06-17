@@ -10,6 +10,9 @@ import android.arch.paging.PagedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.inject.Inject;
+
+import cg.lastfm.api.LastFMService;
 import cg.lastfm.data.Artist;
 import cg.lastfm.datasource.ArtistsDataSource;
 import cg.lastfm.datasource.ArtistsDataSourceFactory;
@@ -23,15 +26,18 @@ public class ArtistsViewModel extends ViewModel {
     private final LiveData<ArtistsDataSourceFactory> artistsDataSourceFactoryLiveData;
     private final LiveData<ArtistsDataSource> artistsDataSourceLiveData;
     private LiveData<NetworkState> networkState;
+    private final LastFMService webService;
 
-    public ArtistsViewModel() {
+    @Inject
+    public ArtistsViewModel(LastFMService webService) {
+        this.webService = webService;
         executor = Executors.newFixedThreadPool(5);
         queryLiveData = new MutableLiveData<>();
         queryLiveData.setValue("");
 
         artistsDataSourceFactoryLiveData = Transformations.switchMap(queryLiveData, query -> {
                     MutableLiveData<ArtistsDataSourceFactory> artistsDataSourceFactoryLiveData = new MutableLiveData<>();
-                    artistsDataSourceFactoryLiveData.setValue(new ArtistsDataSourceFactory(query));
+                    artistsDataSourceFactoryLiveData.setValue(new ArtistsDataSourceFactory(query, webService));
                     return artistsDataSourceFactoryLiveData;
                 }
         );

@@ -8,7 +8,6 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
-import cg.lastfm.api.LastFMApi;
 import cg.lastfm.api.LastFMService;
 import cg.lastfm.data.Artist;
 import cg.lastfm.data.ArtistSearchResults;
@@ -27,8 +26,8 @@ public class ArtistsDataSource extends PageKeyedDataSource<Integer, Artist> {
     private final String query;
 
 
-    ArtistsDataSource(@NonNull String query) {
-        lastFMService = LastFMApi.createLastFMService();
+    ArtistsDataSource(@NonNull String query, LastFMService webService) {
+        lastFMService = webService;
         networkState = new MutableLiveData<>();
         this.query = query;
     }

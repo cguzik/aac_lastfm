@@ -2,6 +2,7 @@ package cg.lastfm;
 
 import android.app.SearchManager;
 import android.arch.lifecycle.MutableLiveData;
+import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
@@ -19,10 +20,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import javax.inject.Inject;
+
 import cg.lastfm.ui.ArtistAdapter;
 import cg.lastfm.ui.ArtistsViewModel;
 import cg.lastfm.ui.ListItemClickListener;
 import cg.lastfm.util.Keyboard;
+import dagger.android.AndroidInjection;
 
 public class MainActivity extends AppCompatActivity implements ListItemClickListener {
 
@@ -32,19 +36,18 @@ public class MainActivity extends AppCompatActivity implements ListItemClickList
     private ArtistAdapter artistAdapter;
     private SwipeRefreshLayout swipeRefreshLayout;
 
+    @Inject
+    ViewModelProvider.Factory viewModelFactory;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        AndroidInjection.inject(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
-
         initSwipeRefreshLayout();
-
         initRecyclerView();
-
         initViewModel();
-
         initAdapter();
-
         initAppBar();
     }
 
@@ -69,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements ListItemClickList
     }
 
     private void initViewModel() {
-        viewModel = ViewModelProviders.of(this).get(ArtistsViewModel.class);
+        viewModel = ViewModelProviders.of(this, viewModelFactory).get(ArtistsViewModel.class);
     }
 
     private void initAdapter() {
